@@ -150,7 +150,16 @@ class TaskResolver {
   }
 
   @QueryWithZod(Task.array())
-  filteredTasks(@ZodArgs(z.boolean().default(false), 'showAll') _showAll: boolean) {
+  filteredTasks(
+    @ZodArgs(z.boolean().default(false), 'showAll') _showAll: boolean,
+    @ZodArgs(
+      z.enum(['high', 'medium', 'low']).optional().describe('Priority of the task'),
+      'priority',
+    )
+    _priority?: ('high' | 'medium' | 'low')[],
+    @ZodArgs(z.array(z.keyof(Task)).optional(), 'selectedFields')
+    _selectedFields?: (keyof z.infer<typeof Task>)[],
+  ) {
     return [{ id: '1', title: 'demo', done: false, priority: 0, status: 'active' as const }]
   }
 
@@ -304,12 +313,24 @@ describe('end-to-end (e2e) schema generation', () => {
         ): Task!
       }
 
+      """Enum values for priority.priority"""
+      enum Priority_PriorityEnum_3 {
+        high
+        low
+        medium
+      }
+
       type Query {
         accept(input: WrappedDefaultsInput!): String!
 
         """Audit logs for the system"""
         auditLogs: [AuditLog!]!
-        filteredTasks(showAll: Boolean! = false): [Task!]!
+        filteredTasks(
+          """Priority of the task"""
+          priority: Priority_PriorityEnum_3
+          selectedFields: [SelectedFields_SelectedFieldsEnum_3!]
+          showAll: Boolean! = false
+        ): [Task!]!
         task: Task!
         task2: Task!
         user(arg_0: UserFilter!): User!
@@ -317,6 +338,16 @@ describe('end-to-end (e2e) schema generation', () => {
 
         """Test overriding the name and description of the query"""
         user5: User!
+      }
+
+      """Enum values for selectedFields.selectedFields"""
+      enum SelectedFields_SelectedFieldsEnum_3 {
+        description
+        done
+        id
+        priority
+        status
+        title
       }
 
       type Subscription {
