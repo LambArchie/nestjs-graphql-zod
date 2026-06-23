@@ -4,6 +4,12 @@ This file contains the changes made to the package.
 
 The sections are in descending order of the change date.
 
+## [4.1.3] - 2026-06-19
+
+### Changed
+
+- `@ZodArgs` now correctly registers enum types when used with bare enums or arrays of enums (e.g. `z.enum([...])` or `z.keyof(schema)`).
+
 ## [4.1.2] - 2026-06-10
 
 ### Changed

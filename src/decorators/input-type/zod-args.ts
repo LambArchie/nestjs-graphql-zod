@@ -4,6 +4,7 @@ import { PipeTransform, Type } from '@nestjs/common'
 import { Args, ArgsOptions } from '@nestjs/graphql'
 
 import { extractNameAndDescription, getNullability } from '../../helpers'
+import { buildEnumType } from '../../helpers/build-enum-type'
 import { describeZodSchema } from '../../helpers/describe-zod-schema'
 import { getZodDefaultValue } from '../../helpers/generate-defaults'
 import { getDescription } from '../../helpers/get-description'
@@ -247,6 +248,17 @@ export function ZodArgs<T extends $ZodType>(
         },
         'input',
       )
+
+      // For object schemas, enum registration happens inside parseSingleShape.
+      // Non-object schemas bypass that path, so we must register enums here.
+      if (typeInfo.isEnum) {
+        const enumParentName = property ?? options.name ?? ''
+        buildEnumType(enumParentName, typeInfo, {
+          name: enumParentName,
+          getEnumType: options.getEnumType,
+        })
+      }
+
       const nullability = getNullability(typeInfo)
       const description = getDescription(input)
 

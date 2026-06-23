@@ -76,6 +76,37 @@ describe('ZodArgs', () => {
     expect(newEnums[0].name).toMatch(/^Member_RoleEnum_/)
   })
 
+  it('should handle a bare enum schema', () => {
+    const enumsBefore = TypeMetadataStorage.getEnumsMetadata().length
+
+    const decorator = ZodArgs(
+      z.enum(['asc', 'desc']).describe('SortOrder: sorting direction'),
+      'sortOrder',
+    )
+    expect(typeof decorator).toBe('function')
+
+    LazyMetadataStorage.load([])
+    const newEnums = TypeMetadataStorage.getEnumsMetadata().slice(enumsBefore)
+    expect(newEnums).toHaveLength(1)
+    expect(newEnums[0].name).not.toMatch(/^__/)
+  })
+
+  it('should handle an optional array of enum values (z.keyof)', () => {
+    const TestSchema = z.object({
+      name: z.string(),
+      age: z.number(),
+    })
+    const enumsBefore = TypeMetadataStorage.getEnumsMetadata().length
+
+    const decorator = ZodArgs(z.array(z.keyof(TestSchema)).optional(), 'SelectedFields')
+    expect(typeof decorator).toBe('function')
+
+    LazyMetadataStorage.load([])
+    const newEnums = TypeMetadataStorage.getEnumsMetadata().slice(enumsBefore)
+    expect(newEnums).toHaveLength(1)
+    expect(newEnums[0].name).not.toMatch(/^__/)
+  })
+
   it('should free internal state', () => {
     const schema = z.object({ x: z.string() }).describe('FreeTest: test')
     ZodArgs(schema, 'input', {})
